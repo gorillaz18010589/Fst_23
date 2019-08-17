@@ -3,13 +3,16 @@ package tw.brad.apps.brad23;
 //新增assets=>裡面寫html
 //android scan barcode zlib github https://github.com/dm77/barcodescanner 引入第三方api
 //權限apihttps://developer.android.com/training/permissions/requesting
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -25,38 +28,51 @@ public class MainActivity extends AppCompatActivity {
 
         //權限設置
         if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.CAMERA)
+                Manifest.permission.CAMERA) //相機權限
                 != PackageManager.PERMISSION_GRANTED) {
-
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},//相機權限
+                    123);
+        }
+        //webview物件實體化
         webView = findViewById(R.id.webview);
         initWebView();
     }
 
-    private  void initWebView(){
-        //設定讓js語法可以看到
-        WebSettings settings =webView.getSettings();
-        settings.setJavaScriptEnabled(true);
+    //初始化webView方法
+    private void initWebView(){
+        WebSettings settings = webView.getSettings(); //叫初設定物件
+        settings.setJavaScriptEnabled(true); //式定js可以顯示
 
-        //連接webview
-        WebViewClient client = new WebViewClient();
-        webView.setWebViewClient(client);
+        WebViewClient client = new WebViewClient(); //webview物件實體
+        webView.setWebViewClient(client); //把物件實體連接到webview
 
-        webView.addJavascriptInterface(new MyBradJS(),"brad");//介紹這個方法讓java物件認識到html
+        webView.addJavascriptInterface(new MyBradJS(), "brad");//讓java物件給js方法認識
 
-        webView.loadUrl("file:///android_asset/brad.html");//連接到指定的html
+        webView.loadUrl("file:///android_asset/brad.html");
+
     }
 
-    //寫一個讓brad.html認識的物件
-    public class  MyBradJS{
+    public class MyBradJS {
         @JavascriptInterface
-        public  void callFromjs(){
+        public void callFromJS(){
             gotoScan();
         }
     }
 
-    private  void gotoScan(){
-        Intent
-                //少一段
+    private void gotoScan(){
+        Intent intent = new Intent(this, ScanActivity.class); //從這裡到Scana頁面
+        //startActivity(intent);
+        startActivityForResult(intent, 123);
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK){
+            String code = data.getStringExtra("code"); //得到qrcode的資料
+            Log.v("brad", "result => " + code);
+            webView.loadUrl("javascript:showCode('"+code+"')"); //連接JS網頁方法
+        }
     }
 }

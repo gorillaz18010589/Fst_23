@@ -1,11 +1,10 @@
 <script>
-  function scan(){
-        brad.callFromjs();
-  }
-  function showCode(code){
-    document.getElementById('code').innerHTML = code;
-  }
+    function scan(){
+        brad.callFromJS();
+    }
+    function showCode(code){
+        document.getElementById('code').value = code;
+    }
 </script>
-
 <input type="text" id="code"/>
-<input type="button" onclick="scan()" value="scan"/>
+<input type="button" onclick="scan()" value="scan" />
